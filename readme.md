@@ -14,7 +14,7 @@ How to use ?
 - Keep a log file with session details in a desired directory
 - Assess the file using command : java FairBilling <file-path>/<file-name>
 - Examples,
-  Relative Path : java FairBilling resources/samples/input-sample-1.txt
-  Relative Path : java FairBilling input-sample.txt
-  Absolute Path : java FairBilling C:/SampleWindowsDirectory/input-sample.txt
-  Absolute Path : java FairBilling SampleLinuxDirectory/input-sample.txt
+  - Relative Path : java FairBilling resources/samples/input-sample-1.txt
+  - Relative Path : java FairBilling input-sample.txt
+  - Absolute Path : java FairBilling C:/SampleWindowsDirectory/input-sample.txt
+  - Absolute Path : java FairBilling /SampleLinuxDirectory/input-sample.txt

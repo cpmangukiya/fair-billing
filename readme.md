@@ -19,7 +19,7 @@ How to use ?
   - java FairBilling C:/folder/resources/samples/input-sample.txt
   
 
-- Alternatively this project can be imported and run into in IDE. ex, IntelliJ or Eclipse.
+- Alternatively this project can be imported and run into in IDE. ex, IntelliJ etc.
 
 Assumptions and Samples
 ------------

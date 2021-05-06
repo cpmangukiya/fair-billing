@@ -13,11 +13,18 @@ import java.util.stream.Stream;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 
+/**
+ * Main feature class - Calculate User Sessions Count and Duration based on formatted log file
+ */
 public class FairBilling {
 
     private static final String START_ACTIVITY = "Start";
     private static final String END_ACTIVITY = "End";
 
+    /**
+     * Main method, Call with one argument which should be file-name(optionally with path).
+     * @param args ex. ../resources/samples/input-sample-1.txt. It expects only one argument.
+     */
     public static void main(String[] args) {
         try {
             if (args == null || args.length != 1) {
@@ -29,11 +36,13 @@ public class FairBilling {
             String filePath = args[0];
             Map<String, SessionInfo> userSessionsInfo;
 
-            // Process line by line using Java Files and Streams API
+            // Maintain last and first valid activity in below variables respectively
             ActivityInfo firstExtremeActivityInfo = new ActivityInfo(null, null, null);
             ActivityInfo lastExtremeActivityInfo = new ActivityInfo(null, null, null);
 
+            // Process line by line using Java Files and Streams API
             try(Stream<String> streamOfLines = Files.lines(Paths.get(filePath))) {
+
                 userSessionsInfo = streamOfLines
                         .filter(FairBilling::validateActivity)
                         .map(FairBilling::parseAndConvertToActivityInfo)
@@ -42,26 +51,30 @@ public class FairBilling {
                                 firstExtremeActivityInfo, lastExtremeActivityInfo), FairBilling::combineHashMap);
 
                 FairBilling.storeAndCalculateStatsForOrphanedActivities(userSessionsInfo, firstExtremeActivityInfo, lastExtremeActivityInfo);
+
+                if(userSessionsInfo.isEmpty()) {
+                    System.out.println("Error! No valid activity details found");
+                    return;
+                }
+
+                // Print the result - Output
+                userSessionsInfo.forEach((userName, sessionInfo) -> System.out.println(userName + " " +
+                        sessionInfo.getSessionCount() + " " +
+                        sessionInfo.getTotalActiveDuration()));
             } catch (IOException e) {
                 System.out.println("Error! File could not be read. Requested file was : " + e.getMessage());
-                return;
             }
-
-            if(userSessionsInfo.isEmpty()) {
-                System.out.println("Error! No valid activity details found");
-                return;
-            }
-
-            // Print the result - Output
-            userSessionsInfo.forEach((userName, sessionInfo) -> System.out.println(userName + " " +
-                    sessionInfo.getSessionCount() + " " +
-                    sessionInfo.getTotalActiveDuration()));
-
         } catch (Exception e) {
             System.out.println("Error! " + e.getMessage());
+            e.printStackTrace(); // Printing Stack Trace since this error is not known and shall be looked at in detail
         }
     }
 
+    /**
+     * Validates logs line and parses details with respect to business fields.
+     * @param line Each line of a log file
+     * @return boolean, return true if valid, false otherwise
+     */
     private static boolean validateActivity(String line) {
         if(line != null && !line.trim().isEmpty()) {
             String[] itemsOfLine = line.split(" "); // Split line with blank space to find activity time, user name, activity(Start and Stop)
@@ -92,6 +105,11 @@ public class FairBilling {
         return false;
     }
 
+    /**
+     * Converts activity string into ActivityInfo object.
+     * @param line Each line of a log file
+     * @return converts activity info into POJO/DTO of type ActivityInfo
+     */
     private static ActivityInfo parseAndConvertToActivityInfo(String line) {
         String[] itemsOfLine = line.split(" ");
         LocalTime activityTime = LocalTime.parse(itemsOfLine[0], new DateTimeFormatterBuilder().appendPattern("HH:mm:ss")
@@ -102,6 +120,9 @@ public class FairBilling {
         return new ActivityInfo(activityTime, userName, activity);
     }
 
+    /**
+     * Processes each activity and accumulates session info user-wise inside a map.
+     */
     private static Map<String, SessionInfo> storeAndCalculateStatsForEachActivity(ActivityInfo currentActivityInfo, Map<String, SessionInfo> sessionInfoMap,
                                                               ActivityInfo firstExtremeActivityInfo, ActivityInfo lastExtremeActivityInfo) {
         // firstExtremeActivityInfo will be filled for first valid activity only. This shall be used for deciding session time on orphaned activities.
@@ -111,17 +132,18 @@ public class FairBilling {
             firstExtremeActivityInfo.setUserName(currentActivityInfo.getUserName());
         }
 
-        // This will be executed for each time valid activity is found and shall point to last valid entry at the end of execution. This shall be used for decideing session time on orphaned attributes.
+        // This will be executed for each time valid activity is found and shall point to last valid entry at the end of execution.
+        // This shall be used for deciding session time on orphaned attributes.
         lastExtremeActivityInfo.setActivity(currentActivityInfo.getActivity());
         lastExtremeActivityInfo.setActivityTime(currentActivityInfo.getActivityTime());
         lastExtremeActivityInfo.setUserName(currentActivityInfo.getUserName());
 
         if(sessionInfoMap.containsKey(currentActivityInfo.getUserName())){
             SessionInfo sessionInfo = sessionInfoMap.get(currentActivityInfo.getUserName());
-            ArrayDeque<ActivityInfo> activityInfoQueue = sessionInfo.getOngoingActivities();
+            ArrayDeque<ActivityInfo> activityInfoQueue = (ArrayDeque<ActivityInfo>) sessionInfo.getOngoingActivities();
 
             if(activityInfoQueue.isEmpty() || activityInfoQueue.peekLast().getActivity().equals(currentActivityInfo.getActivity())) {
-                // If same activity as last then add up in the queue
+                // If same activity as last recorded activity then add up in the queue
                 activityInfoQueue.addLast(currentActivityInfo);
             } else if(END_ACTIVITY.equals(currentActivityInfo.getActivity())) {
                 // If End is followed by Start, then poll first entry from the ongoing operation queue
@@ -135,7 +157,6 @@ public class FairBilling {
                 // If Start is followed by End, then poll all End operations from the ongoing operation queue
                 // and process the duration and increased session count by 1 for each
                 activityInfoQueue.forEach(activityInfo -> {
-                    assert activityInfo != null;
                     long duration = SECONDS.between(firstExtremeActivityInfo.getActivityTime(), activityInfo.getActivityTime());
                     sessionInfo.setTotalActiveDuration(sessionInfo.getTotalActiveDuration() + duration);
                     sessionInfo.setSessionCount(sessionInfo.getSessionCount() + 1);
@@ -156,6 +177,10 @@ public class FairBilling {
         return sessionInfoMap;
     }
 
+    /**
+     * Processes remaining orphaned activity whose either Start or End activity was not found in records
+     * and accumulates session info user-wise inside a map.
+     */
     private static void storeAndCalculateStatsForOrphanedActivities(Map<String, SessionInfo> sessionInfoMap,
                                                                     ActivityInfo firstExtremeActivityInfo, ActivityInfo lastExtremeActivityInfo) {
         sessionInfoMap.forEach((userName, sessionInfo) -> {
@@ -181,9 +206,14 @@ public class FairBilling {
         });
     }
 
+    /**
+     * This method is used to infer different types for .reduce() function of Stream APIs.
+     * This method's logic is not called at all in current program.
+     */
     private static Map<String, SessionInfo> combineHashMap(Map<String, SessionInfo> sessionMapOne, Map<String, SessionInfo> sessionMapTwo) {
         // This method has no significance since this is used by Streams APIs to infer different object type other then items being streamed.
         // Hence types of signature and return types matters here. Actual operation is carried by storeAndCalculateStatsForEachActivity method.
-        return null;
+        sessionMapOne.putAll(sessionMapTwo);
+        return sessionMapOne;
     }
 }

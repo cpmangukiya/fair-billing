@@ -1,8 +1,18 @@
-import java.util.ArrayDeque;
+import java.util.Queue;
 
+/**
+ * DTO/POJO - Carries session count and duration details for a user
+ */
 public class SessionInfo {
+
+    /**
+     * Use for which session details recorded
+     */
     private String userName;
 
+    /**
+     * Total session count of user's activities
+     */
     private int sessionCount;
 
     /**
@@ -10,7 +20,10 @@ public class SessionInfo {
      */
     private long totalActiveDuration;
 
-    private ArrayDeque<ActivityInfo> ongoingActivities;
+    /**
+     * Activity details are stored in this for processing. For intermittent use.
+     */
+    private Queue<ActivityInfo> ongoingActivities;
 
     public String getUserName() {
         return userName;
@@ -36,15 +49,15 @@ public class SessionInfo {
         this.totalActiveDuration = totalActiveDuration;
     }
 
-    public ArrayDeque<ActivityInfo> getOngoingActivities() {
+    public Queue<ActivityInfo> getOngoingActivities() {
         return ongoingActivities;
     }
 
-    public void setOngoingActivities(ArrayDeque<ActivityInfo> ongoingActivities) {
+    public void setOngoingActivities(Queue<ActivityInfo> ongoingActivities) {
         this.ongoingActivities = ongoingActivities;
     }
 
-    public SessionInfo(String userName, int sessionCount, long totalActiveDuration, ArrayDeque<ActivityInfo> ongoingActivities) {
+    public SessionInfo(String userName, int sessionCount, long totalActiveDuration, Queue<ActivityInfo> ongoingActivities) {
         this.userName = userName;
         this.sessionCount = sessionCount;
         this.totalActiveDuration = totalActiveDuration;

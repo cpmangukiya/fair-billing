@@ -1,8 +1,18 @@
 import java.time.LocalTime;
 
+/**
+ * DTO/POJO - Carries session activity details
+ */
 public class ActivityInfo {
+
+    /**
+     * Activity time in HH:mm:ss format
+     */
     private LocalTime activityTime;
 
+    /**
+     * User by which the activity is performed
+     */
     private String userName;
 
     /**

@@ -7,7 +7,7 @@ The result or error should be visible in the consol/terminal after running the p
 Pre Steps
 ------------
 - Make sure JDK 1.8 is installed and configured in the system
-- Compile the code using command : javac ActivityInfo.java SessionInfo.java FairBilling.java
+- Compile the java files ActivityInfo.java SessionInfo.java FairBilling.java
 
 How to use ?
 ------------
@@ -20,6 +20,12 @@ How to use ?
   
 
 - Alternatively this project can be imported and run into in IDE. ex, IntelliJ etc.
+
+
+- For quick hands-on :
+  - Got to src/main/java
+  - Compile the files : javac ActivityInfo.java SessionInfo.java FairBilling.java  
+  - Run the program : java FairBilling ../resources/samples/input-sample-1.txt
 
 Assumptions and Samples
 ------------

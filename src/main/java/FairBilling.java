@@ -1,8 +1,3 @@
-package com.company.billing;
-
-import com.company.billing.dto.ActivityInfo;
-import com.company.billing.dto.SessionInfo;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;

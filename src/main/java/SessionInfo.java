@@ -1,5 +1,3 @@
-package com.company.billing.dto;
-
 import java.util.ArrayDeque;
 
 public class SessionInfo {

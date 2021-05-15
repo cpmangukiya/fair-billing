@@ -23,7 +23,7 @@ How to use ?
 
 
 - For quick hands-on :
-  - Got to src/main/java
+  - Go to src/main/java
   - Compile the files : javac ActivityInfo.java SessionInfo.java FairBilling.java  
   - Run the program : java FairBilling ../resources/samples/input-sample-1.txt
 
